@@ -4,7 +4,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from RAG import get_context 
 
 st.set_page_config(page_title="HR Chatbot", page_icon="🤖")
-st.title("HR Assistant Chatbot 🤖")
+st.title("HR Assistant Chatbot  🤖")
 
 with st.sidebar:
     st.header("Settings")
@@ -13,6 +13,8 @@ with st.sidebar:
         ("Local Qwen 1.5B", "Cloud Qwen ......")
     )
     st.markdown("---")
+
+    st.markdown("Developed by Jana 👩🏻‍💻")
 
     # Cache the model loading to prevent reloading on every interaction
     @st.cache_resource
