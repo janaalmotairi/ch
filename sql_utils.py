@@ -1,10 +1,13 @@
 import re
 
+
 def clean_sql(sql: str) -> str:
+    """Clean raw model output and extract a single SELECT statement."""
     s = (sql or "").strip()
     s = s.replace("```sql", "").replace("```", "").strip()
     s = re.sub(r"^\s*sql\s*:\s*", "", s, flags=re.IGNORECASE).strip()
 
+    # Extract from the first SELECT onward
     m = re.search(r"(select\b.*)", s, flags=re.IGNORECASE | re.DOTALL)
     if not m:
         return s.strip()
@@ -13,16 +16,18 @@ def clean_sql(sql: str) -> str:
     s = s.split(";")[0].strip()
     return s
 
+
 def pretty_answer(question: str, cols, rows) -> str:
-    """Format SQL results into a human-friendly answer (Arabic/English)."""
+    """Format SQL results into a human-friendly answer (Arabic / English)."""
     question = question or ""
     is_ar = any("\u0600" <= ch <= "\u06FF" for ch in question)
     q = question.lower()
 
+    # No results case
     if not rows:
         return "لا توجد نتائج." if is_ar else "No results found."
 
-    # Single scalar result
+    # Single numeric or scalar result
     if len(cols) == 1 and len(rows) == 1:
         val = rows[0][0]
 
@@ -44,7 +49,7 @@ def pretty_answer(question: str, cols, rows) -> str:
 
         return str(val)
 
-        # Tabular results (show up to 10 rows) - friendly format
+    # Tabular results (show up to 10 rows)
     shown = rows[:10]
     if is_ar:
         lines = [f"- {', '.join(str(x) for x in r)}" for r in shown]
@@ -57,23 +62,24 @@ def pretty_answer(question: str, cols, rows) -> str:
 
 
 def fix_common_columns(sql: str) -> str:
+    """Normalize common column name variants to match the schema."""
     replacements = {
-    "department_name": "Department",
-    "dept_name": "Department",
-    "dept": "Department",
-    "department": "Department",
+        "department_name": "Department",
+        "dept_name": "Department",
+        "dept": "Department",
+        "department": "Department",
 
-    "monthly_income": "MonthlyIncome",
-    "monthlyincome": "MonthlyIncome",
-    "salary": "MonthlyIncome",
-    "income": "MonthlyIncome",
+        "monthly_income": "MonthlyIncome",
+        "monthlyincome": "MonthlyIncome",
+        "salary": "MonthlyIncome",
+        "income": "MonthlyIncome",
 
-    "job_satisfaction": "JobSatisfaction",
-    "work_life_balance": "WorkLifeBalance",
-    "education_field": "EducationField",
-    "job_role": "JobRole",
-    "overtime": "OverTime",
-}
+        "job_satisfaction": "JobSatisfaction",
+        "work_life_balance": "WorkLifeBalance",
+        "education_field": "EducationField",
+        "job_role": "JobRole",
+        "overtime": "OverTime",
+    }
 
     out = sql
     for wrong, right in replacements.items():
@@ -82,6 +88,7 @@ def fix_common_columns(sql: str) -> str:
 
 
 def fix_department_values(sql: str) -> str:
+    """Normalize department values to the exact dataset labels."""
     dept_map = {
         "research and development": "Research & Development",
         "research & development": "Research & Development",
@@ -103,6 +110,7 @@ def fix_department_values(sql: str) -> str:
 
 
 def normalize_sql(raw: str) -> str:
+    """Full SQL normalization pipeline."""
     sql = clean_sql(raw)
     sql = fix_common_columns(sql)
     sql = fix_department_values(sql)

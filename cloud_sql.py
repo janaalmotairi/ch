@@ -3,6 +3,7 @@ from sql_utils import normalize_sql, pretty_answer
 
 
 def ask_cloud_sql(client, question: str) -> str:
+    # Prompt sent to the LLM to generate SQL only
     prompt = f"""
 You are a SQL generator.
 Rules:
@@ -18,6 +19,7 @@ Question:
 SQL:
 """.strip()
 
+    # Call Groq / LLM to generate SQL
     completion = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[
@@ -28,18 +30,25 @@ SQL:
         max_tokens=200,
     )
 
+    # Raw SQL output from the model
     raw = completion.choices[0].message.content
+
+    # Normalize and clean SQL (fix column names, formatting, etc.)
     sql = normalize_sql(raw)
 
+    # Basic validation to ensure we only run SELECT queries
     if not sql.lower().startswith("select"):
         return f"Invalid SQL generated.\nRaw: {str(raw).strip()[:200]}"
 
+    # Execute SQL against the database
     try:
         cols, rows = execute_sql(sql)
     except Exception as e:
         return f"SQL execution error: {e}\nSQL was: {sql}"
 
+    # Handle empty result sets
     if not rows:
         return "No results found."
 
+    # Convert results into a user-friendly answer
     return pretty_answer(question, cols, rows)

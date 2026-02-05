@@ -1,6 +1,3 @@
-"""
-HR Assistant Chatbot (Streamlit)
-"""
 
 import os
 import json
