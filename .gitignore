@@ -1,1 +1,3 @@
 local_qwen_model/
+.chat_history/
+.__pycache__/

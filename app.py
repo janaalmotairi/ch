@@ -36,27 +36,6 @@ def _clean_sql_cloud(sql: str) -> str:
 
 
 
-def _fix_common_columns_cloud(sql: str) -> str:
-    replacements = {
-        "department_name": "Department",  
-        "department": "Department",
-        "monthly_income": "MonthlyIncome",
-        "monthlyincome": "MonthlyIncome",
-        "salary": "MonthlyIncome",
-        "income": "MonthlyIncome",
-        "job_satisfaction": "JobSatisfaction",
-        "work_life_balance": "WorkLifeBalance",
-        "education_field": "EducationField",
-        "job_role": "JobRole",
-        "overtime": "OverTime",
-    }
-
-    out = sql
-    for wrong, right in replacements.items():
-        out = re.sub(rf"\b{wrong}\b", right, out, flags=re.IGNORECASE)
-    return out
-
-
 # Page config
 st.set_page_config(page_title="HR Assistant Chatbot", page_icon="🤖", layout="centered")
 st.title("🤖 HR Assistant Chatbot")
@@ -287,7 +266,7 @@ if prompt:
 
                 sql_query = completion.choices[0].message.content
                 sql_query = _clean_sql_cloud(sql_query)
-                sql_query = _fix_common_columns_cloud(sql_query)
+                sql_query = normalize_sql(sql_query)
 
                 cols, rows = execute_sql(sql_query)
                 response_text = pretty_answer(prompt, cols, rows)
