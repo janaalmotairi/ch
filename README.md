@@ -75,7 +75,6 @@ Chatbot_Project/
 
 ## 🔐 Security Notes
 - API keys must never be committed to GitHub.
-- Streamlit secrets should remain local only.
 - This project is designed to allow read-only queries only (no data modification SQL).
 
 ---
